@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cascade Path - Cell Signaling Game</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&family=Orbitron:wght@400;500;700&display=swap');
+
+    body { 
+      margin: 0; 
+      font-family: 'Inter', sans-serif; 
+      background-color: #101727; /* Dark blue-gray base */
+      color: #e0f7fa; /* Light cyan for text */
+      overflow-x: hidden;
+    }
+
+    .font-orbitron { font-family: 'Orbitron', sans-serif; }
+
+    .gradient-bg-dark {
+      background: linear-gradient(135deg, #1a2035 0%, #2a2a45 100%); /* Deep blue/purple to darker slate */
+    }
+    
+    .interactive-glow-button {
+      transition: all 0.3s ease;
+      box-shadow: 0 0 5px rgba(77, 208, 225, 0.3), 0 0 10px rgba(77, 208, 225, 0.2);
+    }
+    .interactive-glow-button:hover:not(:disabled) {
+      box-shadow: 0 0 15px rgba(77, 208, 225, 0.7), 0 0 25px rgba(77, 208, 225, 0.5);
+      transform: translateY(-2px);
+    }
+    .interactive-glow-button:disabled {
+      background-color: #4a5568; /* Muted gray for disabled */
+      box-shadow: none;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .card-base {
+      background-color: rgba(42, 50, 70, 0.8); /* Semi-transparent dark card base */
+      border: 1px solid rgba(77, 208, 225, 0.3); /* Cyan border */
+      color: #e0f7fa;
+      transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+      border-radius: 0.75rem; /* 12px */
+    }
+    .card-base:hover {
+      transform: translateY(-6px) scale(1.04);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.4), 0 0 15px rgba(77, 208, 225, 0.5);
+    }
+    .card-selected {
+      border-width: 2px;
+      border-color: #4dd0e1; /* Bright cyan */
+      box-shadow: 0 0 15px #4dd0e1, 0 0 25px #4dd0e1;
+      transform: scale(1.05);
+    }
+    
+    /* Suit-specific subtle backgrounds or icons could be added here or inline */
+    .suit-clubs-bg { /* Ligands */ background-image: radial-gradient(circle at top left, rgba(77, 182, 172, 0.1) 0%, transparent 50%); }
+    .suit-diamonds-bg { /* Receptors */ background-image: radial-gradient(circle at top left, rgba(66, 165, 245, 0.1) 0%, transparent 50%); }
+    .suit-hearts-bg { /* Transducers */ background-image: radial-gradient(circle at top left, rgba(236, 64, 122, 0.1) 0%, transparent 50%); }
+    .suit-spades-bg { /* Responses */ background-image: radial-gradient(circle at top left, rgba(255, 167, 38, 0.1) 0%, transparent 50%); }
+
+    .text-shadow-cyan {
+      text-shadow: 0 0 8px rgba(77, 208, 225, 0.7);
+    }
+    
+    .panel {
+      background-color: rgba(26, 32, 53, 0.7); /* Darker, semi-transparent panel */
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(77, 208, 225, 0.2);
+      border-radius: 0.75rem; /* 12px */
+      padding: 1rem; /* 16px */
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+
+    .pathway-arrow {
+      font-size: 1.5em;
+      color: rgba(77, 208, 225, 0.6); /* Cyan arrow */
+      margin: 0 0.25rem;
+    }
+    
+    /* Scrollbar styling for game log */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(42, 50, 70, 0.5);
+      border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(77, 208, 225, 0.6);
+      border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(77, 208, 225, 0.8);
+    }
+
+    /* Animation for pathway cards */
+     .pathway-card-enter {
+      opacity: 0;
+      transform: translateY(20px) scale(0.9);
+    }
+    .pathway-card-enter-active {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      transition: opacity 300ms ease-out, transform 300ms ease-out;
+    }
+    .pathway-card-exit {
+      opacity: 1;
+    }
+    .pathway-card-exit-active {
+      opacity: 0;
+      transform: scale(0.8);
+      transition: opacity 300ms, transform 300ms;
+    }
+    
+    #biology-fact-display {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      right: 10px;
+      max-width: 95%;
+      margin: 0 auto;
+      background-color: rgba(26, 32, 53, 0.85); /* Panel background */
+      backdrop-filter: blur(5px);
+      color: #b0bec5; /* Lighter gray for fact text */
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem; /* 8px */
+      font-size: 0.8rem;
+      text-align: center;
+      z-index: 100;
+      border-top: 1px solid rgba(77, 208, 225, 0.3);
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+    }
+    
+    /* Modal styling */
+    .modal-backdrop {
+      background-color: rgba(0, 0, 0, 0.85); /* Darker backdrop */
+    }
+    .modal-content {
+      background-color: #1e293b; /* Dark slate for modal content */
+      border: 1px solid rgba(77, 208, 225, 0.4);
+    }
+
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.1.0/",
+    "react": "https://esm.sh/react@^19.1.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/"
+  }
+}
+</script>
+</head>
+<body>
+  <div id="root" class="gradient-bg-dark"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html><link rel="stylesheet" href="index.css">
+<script src="index.tsx" type="module"></script>
