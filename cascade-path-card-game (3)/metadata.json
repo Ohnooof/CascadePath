@@ -1,5 +1,0 @@
-{
-  "name": "Cascade Path Card Game",
-  "description": "A strategic card game based on signal transduction pathways. Players chain suits (Clubs, Diamonds, Hearts, Spades) representing ligands, receptors, transducers, and responses. Face cards introduce special effects like pathway reversal (Jacks), multi-plays (Queens), turn skips (Kings), and suit mutations (Aces). The goal is to be the first to empty your hand by completing pathways or forcing opponents to take them. Jokers can be used as wild cards.",
-  "requestFramePermissions": []
-}
